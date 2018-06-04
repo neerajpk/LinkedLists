@@ -9,20 +9,33 @@
 
 #include<stdio.h>
 
+void swap(int*, int*);
+void reverse(int*, int*);
 void rotate(int*,int,int);
 
+//Swapping two variables using XOR
+void swap(int *p, int *q)
+{
+    *p = *p ^ *q;
+    *q = *p ^ *q;
+    *p = *p ^ *q;
+}
+
+//Reversing an array
+void reverse(int *p, int *q)
+{
+    while(p < q) swap(p++, q--);
+}
+
 void rotate(int* nums, int numsSize, int k) {
-    int index = 0;
-    while(index < k)
-    {
-        int swapvar = nums[numsSize-1];
-        for(int i = numsSize - 1; i > 0; i--)
-        {
-            nums[i] = nums[i-1];
-        }
-        nums[0] = swapvar;
-        index++;
-    }
+    //Module calculation for when k > numsSize
+    k = k % numsSize;
+    //Reverse the entire array
+    reverse(&nums[0], &nums[numsSize - 1]);
+    //Reverse subarray from 0 to k - 1
+    reverse(&nums[0], &nums[k - 1]);
+    //Reverse subarray from k to numsSize - 1
+    reverse(&nums[k], &nums[numsSize - 1]);
 }
 
 void main()
