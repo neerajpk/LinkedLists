@@ -10,69 +10,13 @@
 int removeDuplicates(int*, int);
 
 int removeDuplicates(int* nums, int numsSize) {
-    // Initialize variable length to be returned
-    int length = 1;
-    if(numsSize>=1)
+    int i = 0, j = 1;
+    for(;i,j < numsSize;)
     {
-        // Loop through each array element
-        for(int i = 0; i+1<numsSize; i++)
-        {
-            if(nums[i]==nums[i+1])
-            {
-                if(numsSize>2)
-                {
-                    // For each duplicate found, we loop forward in the array to find the next unique element.
-                    // This is a sorted array, so the expectation is to find an element larger than the one at i/i+1
-                    int j = i + 2;
-                    while(j < numsSize)
-                    {
-                        if(nums[j]==nums[i+1])
-                            j++;
-                        else
-                        {
-                            length++;
-                            nums[i+1]=nums[j];
-                            break;
-                        }
-                    }
-                }
-                // Require atleast 3 elements to proceed
-                else
-                    break;
-            }
-            else
-                // This part of the code handles special cases, where after a few exchanges, (i + 1)th element is less than ith element
-                // However, there still are elements at i + x that are larger than that at i
-                // Eg: [1,2,3,6,3,3,6,7,7]
-                if(nums[i+1]<nums[i])
-                    {
-                        int j = i + 2;
-                        while(j<numsSize)
-                        {
-                            if(nums[j]<=nums[i])
-                                j++;
-                            else
-                            {
-                                length++;
-                                nums[i+1]=nums[j];
-                                break;
-                            }
-                        }
-                    // When the desired answer is reached
-                    // For the example above : [1,2,3,6,7,3,6,7,7]
-                        if(j==numsSize)
-                            break;
-                    }
-            else
-            {
-                length++;
-            }
-        }
+        if(nums[i] == nums[j]) j++;
+        else nums[++i] = nums[j];
     }
-    else
-        length = 0;
-
-    return length;
+    return (numsSize == 0 ? 0 : i + 1);
 }
 
 void main()
