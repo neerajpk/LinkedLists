@@ -3,51 +3,45 @@
 
 #include<stdio.h>
 #include<stdbool.h>
+#include<stdlib.h>
 
-void swap(int*, int*);
-void heapify(int*, int, int);
-void heapsort(int*, int);
+//struct MyList is a Linked List node
+typedef struct{
+    int value;
+    struct MyList* next;
+}MyList;
+
+//Function prototypes defined
+bool insert(MyList**, int, int);
 bool containsDuplicate(int*, int);
 
-void swap(int *p, int *q)
+//search_and_insert function checks if "entry" is present in "HashSet", returns FALSE if it is,
+//else uses LinkedList Chaining to resolve collisions and inserts "entry" into "HASHSET"
+bool search_and_insert(MyList **HashSet, int Set_Size, int entry)
 {
-    int temp = *p;
-    *p = *q;
-    *q = temp;
-}
-
-void heapify(int* nums, int numsSize, int index)
-{
-    int largest = index;
-    int left = 2 * index + 1;
-    int right = 2 * index + 2;
-    if(left < numsSize && nums[largest] < nums[left]) largest = left;
-    if(right < numsSize && nums[largest] < nums[right]) largest = right;
-    if(largest != index)
+    MyList *temp = HashSet[abs(entry) % Set_Size];
+    while(temp != NULL)
     {
-        swap(&nums[index], &nums[largest]);
-        heapify(nums, numsSize, largest);
+        if(temp -> value == entry) return false;
+        temp = temp -> next;
     }
-}
-
-void heapsort(int* nums, int numsSize)
-{
-    for(int i = (numsSize/2) - 1; i >= 0; i--) heapify(nums, numsSize, i);
-    for(int i = numsSize - 1; i >= 0; i--)
-    {
-        swap(&nums[i], &nums[0]);
-        heapify(nums, i, 0);
-    }
+    temp = (MyList*)malloc(sizeof(MyList));
+    temp -> value = entry;
+    temp -> next = HashSet[abs(entry) % Set_Size];
+    HashSet[abs(entry) % Set_Size] = temp;
+    return true;
 }
 
 bool containsDuplicate(int* nums, int numsSize) {
-    heapsort(nums, numsSize);
-    for(int i = 1; i < numsSize; i++) if(nums[i] == nums[i - 1]) return true;
-    return false;
+    int Set_Size = 5000, ret_val = 0;
+    MyList **HashSet = (MyList**)calloc(Set_Size, sizeof(MyList*));
+    for(int i = 0; i < numsSize; i++) if(!search_and_insert(HashSet, Set_Size, nums[i])) ret_val = 1;
+    free(HashSet);
+    return ret_val;
 }
 
 void main()
 {
-  int array[4] = {1,2,3,1};
+  int array[4] = {1,2,3,-1};
   printf("%s",(containsDuplicate(array, 4) == 1) ? "TRUE" : "FALSE");
 }
