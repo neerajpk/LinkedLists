@@ -19,55 +19,91 @@ What if elements of nums2 are stored on disk, and the memory is limited such tha
  * Note: The returned array must be malloced, assume caller calls free().
  */
 
-#include<stdio.h>
-#include<stdlib.h>
+ #include<stdio.h>
+ #include<stdlib.h>
+ #include<math.h>
+
+//Struct defined to be used in HashTable chaining (collision resolution)
+//value stores the unique array element, count stores its occurence count in the array
+typedef struct
+{
+    int value;
+    int count;
+    struct MyList* next;
+}MyList;
 
 //Function prototypes declared
+void insert(MyList**, int, int*, int);
+int* search(MyList**, int, int*, int, int*, int*);
 int* intersect(int*, int, int*, int, int*);
 
-int* intersect(int* nums1, int nums1Size, int* nums2, int nums2Size, int* returnSize) {
-    int arraysize = 0, skipsize = 0, skipflag = 0;
-    int *returnarray = (int*)malloc(sizeof(int));
-    //If any of nums1 or nums2 is empty, return empty array
-    if(nums1Size == 0 || nums2Size == 0) return returnarray;
-    //Skiparray stores array indices on array pointed to by *q, for which intersection has already been identified
-    int *skiparray = (int*)malloc(sizeof(int));
-    //*p points to smaller array between nums1 and nums2, *q points to the larger one
-    int *p = (nums1Size < nums2Size) ? nums1 : nums2;
-    int *q = (nums1Size < nums2Size) ? nums2 : nums1;
-    int p_size = (nums1Size < nums2Size) ? nums1Size : nums2Size;
-    int q_size = (nums1Size < nums2Size) ? nums2Size : nums1Size;
-    for(int i = 0; i < p_size; i++)
+//HashTable insert function
+void insert(MyList **HashTable, int table_size, int *nums, int numsSize)
+{
+    MyList *temp = NULL;
+    int found = 0;
+    for(int i = 0; i < numsSize; i++)
     {
-       for(int j = 0; j < q_size; j++)
-       {
-           if(skipsize > 0)
-           {
-               skipflag = 0;
-               int k = 0;
-               while(k < skipsize)
-               {
-                   if(j == skiparray[k++])
-                   {
-                       skipflag = 1;
-                       break;
-                   }
-               }
-           }
-           // If a unique match is identified between the two arrays, then we write it into the return array
-           if(*(p + i) == *(q + j) && skipflag == 0)
-           {
-               returnarray = (int*)realloc(returnarray, sizeof(int) * ++arraysize);
-               skiparray = (int*)realloc(skiparray, sizeof(int) * ++skipsize);
-               *(returnarray + arraysize - 1) = *(q + j);
-               *(skiparray + skipsize - 1) = j;
-               returnSize[0]++;
-               break;
-           }
-       }
+        found = 0;
+        temp = HashTable[abs(nums[i]) % table_size];
+        while(temp != NULL)
+        {
+            if(temp -> value == nums[i])
+            {
+                temp -> count += 1;
+                found = 1;
+                break;
+            }
+            temp = temp -> next;
+        }
+        if(found == 0)
+        {
+            temp = (MyList*)malloc(sizeof(MyList));
+            temp -> value = nums[i];
+            temp -> count = 1;
+            temp -> next = HashTable[abs(nums[i]) % table_size];
+            HashTable[abs(nums[i]) % table_size] = temp;
+        }
     }
-    free(skiparray);
-    return returnarray;
+}
+
+//Search function to search for one array's elements in the other array stored in the HashTable
+int* search(MyList **HashTable, int table_size, int *nums, int numsSize, int *ret_array, int* returnSize)
+{
+    MyList *temp = NULL;
+    for(int i = 0; i < numsSize; i++)
+    {
+        temp = HashTable[abs(nums[i]) % table_size];
+        while(temp != NULL)
+        {
+            if(temp -> value == nums[i] && temp -> count > 0)
+            {
+                temp -> count -= 1;
+                ret_array = (int*)realloc(ret_array, ++(*returnSize) * sizeof(int));
+                ret_array[*returnSize - 1] = nums[i];
+                break;
+            }
+            temp = temp -> next;
+        }
+    }
+    return ret_array;
+}
+
+int* intersect(int* nums1, int nums1Size, int* nums2, int nums2Size, int* returnSize) {
+    int *ret_array = (int*)malloc(sizeof(int)), table_size = 100;
+    MyList **HashTable = (MyList**)calloc(table_size,sizeof(MyList*));
+    *returnSize = 0;
+    if(nums1Size > nums2Size)
+    {
+        insert(HashTable, table_size, nums1, nums1Size);
+        ret_array = search(HashTable, table_size, nums2, nums2Size, ret_array, returnSize);
+    }
+    else
+    {
+        insert(HashTable, table_size, nums2, nums2Size);
+        ret_array = search(HashTable, table_size, nums1, nums1Size, ret_array, returnSize);
+    }
+    return ret_array;
 }
 
 void main()
