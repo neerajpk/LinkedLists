@@ -93,4 +93,5 @@ void main()
   ret_array = twoSum(nums, 4, target);
   printf("Two Sum is :\n");
   for(int i = 0; i < 2; i++) printf("%d\t", ret_array[i]);
+  free(ret_array);
 }
